@@ -349,6 +349,27 @@ class LumeElement extends Effectful(HTMLElement) {
     // not used currently, but we'll leave this here so that child classes can
     // call super, and that way we can add an implementation later when needed.
     adoptedCallback() { }
+    /**
+     * This is similar to `dispatchEvent()`, but useful for dispatching a
+     * non-builtin event and causing any `on*` method for that event to also be
+     * called if it exists.
+     *
+     * With builtin events, for example, when the builtin `click` event is
+     * dispatched, the element's `.onclick()` method is called automatically if
+     * it exists. Now we can achieve the same behavior with custom events, so
+     * that for example `dispatchEventWithCall(new Event('myevent'))` will
+     * also cause `.onmyevent()` to be called if it exists.
+     *
+     * Note, avoid calling this method with an event that is not a custom event,
+     * or you'll trigger the respective builtin `on*` method twice.
+     */
+    dispatchEventWithCall(event) {
+        const name = event.type;
+        const methodName = 'on' + name;
+        if (methodName in this)
+            this[methodName](event);
+        return super.dispatchEvent(event);
+    }
 }
 _a = LumeElement;
 // TODO rename the export to LumeElement in a breaking version bump.
